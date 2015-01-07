@@ -1,9 +1,11 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <sysexits.h>
-#include <errno.h>
 #include <err.h>
+#include <errno.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sysexits.h>
+
 #include "set.h"
 
 typedef int cell;

@@ -1,4 +1,6 @@
+#include <stdbool.h>
 #include <stdlib.h>
+
 #include "set.h"
 
 struct set {
@@ -17,9 +19,9 @@ set_free(struct set *s) {
 	free(s);
 }
 
-int
+bool
 set_is_empty(struct set *s) {
-	return 1;
+	return true;
 }
 
 void
@@ -30,9 +32,9 @@ void
 set_remove(struct set *s, void *e) {
 }
 
-int
+bool
 set_contains(struct set *s, void *e) {
-	return 0;
+	return false;
 }
 
 void *
