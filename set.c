@@ -5,17 +5,20 @@
 
 struct set {
 	elem_eq eq;
+	void *elems;
 };
 
 struct set *
 set_create(elem_eq eq) {
 	struct set *s = malloc(sizeof(struct set));
 	s->eq = eq;
+	s->elems = reallocarray(NULL, 0, sizeof(void *));
 	return s;
 }
 
 void
 set_free(struct set *s) {
+	free(s->elems);
 	free(s);
 }
 
