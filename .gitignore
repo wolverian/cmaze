@@ -2,3 +2,4 @@
 *.manlint
 tags
 cmaze
+cscope.out

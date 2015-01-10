@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/param.h>
 #include <sysexits.h>
 
 #include "set.h"
@@ -28,7 +29,7 @@ maze_create(int height, int width) {
 
 	m->width = width;
 	m->height = height;
-	m->a = reallocarray(NULL, width*height, sizeof(cell));
+	m->a = reallocarray(NULL, (size_t)(width*height), sizeof(cell));
 	
 	return m;
 }
@@ -40,7 +41,7 @@ maze_free(struct maze *m) {
 }
 
 cell
-maze_cell_at(struct maze *m, int x, int y) {
+maze_cell_at(const struct maze *m, int x, int y) {
 	if (x >= m->width) {
 		errno = EDOM;
 		err(EX_SOFTWARE, "x out of bounds: %d", x);
@@ -54,7 +55,7 @@ maze_cell_at(struct maze *m, int x, int y) {
 }
 
 void
-maze_set_cell(struct maze *m, int x, int y, cell c) {
+maze_set_cell(const struct maze *m, int x, int y, cell c) {
 	if (x >= m->width) {
 		errno = EDOM;
 		err(EX_SOFTWARE, "x out of bounds: %d", x);
@@ -84,8 +85,8 @@ struct pt {
 	int x, y;
 };
 
-int
-pt_eq(struct pt *a, struct pt *b) {
+bool
+pt_eq(const struct pt *a, const struct pt *b) {
 	return a->x == b->x && a->y == b->y;
 }
 
@@ -98,7 +99,7 @@ pt_create(int x, int y) {
 }
 
 struct pt *
-pt_add_dir(struct pt *p, enum dir d) {
+pt_add_dir(const struct pt *p, enum dir d) {
 	int x = p->x;
 	int y = p->y;
 	switch (d) {
@@ -120,35 +121,36 @@ pt_add_dir_inplace(struct pt *p, enum dir d) {
 	}
 }
 
-int
-can_carve(struct maze *m, struct pt *po, enum dir d) {
+bool
+can_carve(const struct maze *m, const struct pt *po, enum dir d) {
 	struct pt *p = pt_add_dir(po, d);
 	pt_add_dir_inplace(p, d);
 
-	if (p->x < 0 || p-> y < 0 || p->x >= m->width || p->y >= m->height) return 0;
+	if (p->x < 0 || p-> y < 0 || p->x >= m->width || p->y >= m->height)
+		return false;
 
 	if (maze_cell_at(m, p->x, p->y) != WALL)
-		return 0;
+		return false;
 
 	pt_add_dir_inplace(p, d);
 
-	if (p->x >= m->width) return 0;
-	if (p->y >= m->height) return 0;
+	if (p->x >= m->width) return false;
+	if (p->y >= m->height) return false;
 
-	return 1;
+	return true;
 }
 
 void
 carve_maze_part(struct maze *m, int x, int y) {
 	struct set *s = set_create((elem_eq)pt_eq);
-	struct pt *p = pt_create(x, y);;
-	set_insert(s, p);	
+	struct pt start = {x, y};
+	set_insert(s, &start);	
 
 	while (!set_is_empty(s)) {
 		// Choose where to go next.
 		struct pt *c = set_pick(s);
 
-		char dirs[4] = { 0, 0, 0, 0 };
+		char dirs[] = { 0, 0, 0, 0 };
 
 		dirs[UP] = can_carve(m, c, UP);
 		dirs[RIGHT] = can_carve(m, c, RIGHT);
@@ -159,20 +161,21 @@ carve_maze_part(struct maze *m, int x, int y) {
 			// Pick a random direction.
 			enum dir d;
 			do {
-				d = arc4random_uniform(sizeof(dirs) / sizeof(dirs[0]));
+				d = arc4random_uniform(nitems(dirs));
 			} while (dirs[d] == 0);
-			struct pt *p = pt_create(c->x, c->y);
-			struct pt *to = pt_add_dir(p, d);
+			struct pt p = {.x = c->x, .y = c->y};
+			struct pt *to = pt_add_dir(&p, d);
 			maze_set_cell(m, to->x, to->y, CLEAR);
 			struct pt *beyond = pt_add_dir(to, d);
 			maze_set_cell(m, beyond->x, beyond->y, CLEAR);
-			free(p);
 			free(to);
 			free(beyond);
 		} else {
 			set_remove(s, c);
 		}
 	}
+
+	set_free(s);
 }
 
 void
