@@ -7,7 +7,7 @@
 #include <sys/param.h>
 #include <sysexits.h>
 
-#include "set.h"
+#include "../libarray/array.h"
 
 typedef int cell;
 
@@ -29,7 +29,7 @@ maze_create(int height, int width) {
 
 	m->width = width;
 	m->height = height;
-	m->a = reallocarray(NULL, (size_t)(width*height), sizeof(cell));
+	m->a = reallocarray(NULL, width*height, sizeof(cell));
 	
 	return m;
 }
@@ -140,52 +140,21 @@ can_carve(const struct maze *m, const struct pt *po, enum dir d) {
 	return true;
 }
 
+
+
+
 void
 carve_maze_part(struct maze *m, int x, int y) {
-	struct set *s = set_create((elem_eq)pt_eq);
-	struct pt start = {x, y};
-	set_insert(s, &start);	
-
-	while (!set_is_empty(s)) {
-		// Choose where to go next.
-		struct pt *c = set_pick(s);
-
-		char dirs[] = { 0, 0, 0, 0 };
-
-		dirs[UP] = can_carve(m, c, UP);
-		dirs[RIGHT] = can_carve(m, c, RIGHT);
-		dirs[DOWN] = can_carve(m, c, DOWN);
-		dirs[LEFT] = can_carve(m, c, LEFT);
-
-		if (dirs[UP] || dirs[RIGHT] || dirs[DOWN] || dirs[LEFT]) {
-			// Pick a random direction.
-			enum dir d;
-			do {
-				d = arc4random_uniform(nitems(dirs));
-			} while (dirs[d] == 0);
-			struct pt p = {.x = c->x, .y = c->y};
-			struct pt *to = pt_add_dir(&p, d);
-			maze_set_cell(m, to->x, to->y, CLEAR);
-			struct pt *beyond = pt_add_dir(to, d);
-			maze_set_cell(m, beyond->x, beyond->y, CLEAR);
-			free(to);
-			free(beyond);
-		} else {
-			set_remove(s, c);
-		}
-	}
-
-	set_free(s);
 }
 
 void
 carve_maze(struct maze *m) {
-	// Q: Why do we carve in a loop?
-	// A: The carving algorithm can trap itself, i.e. it is not guaranteed
-	// to fill the available space. We can brute force around this by
-	// carving a maze from every point (x, y) where x and y are both odd.
-	// This ensures that the maze is filled as much as possible and that
-	// only odd points are carved.
+	/* Q: Why do we carve in a loop?
+	   A: The carving algorithm can trap itself, i.e. it is not guaranteed
+	   to fill the available space. We can brute force around this by
+	   carving a maze from every point (x, y) where x and y are both odd.
+	   This ensures that the maze is filled as much as possible and that
+	   only odd points are carved. */
 	for (int y = 1; y < m->height; y += 2) {
 		for (int x = 1; x < m->width; x += 2) {
 			carve_maze_part(m, x, y);

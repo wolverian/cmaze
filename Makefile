@@ -1,5 +1,3 @@
-COPTS=-std=c99
-SRCS=cmaze.c set.c
-PROG=cmaze
+SUBDIR=libarray maze
 
-.include <bsd.prog.mk>
+.include <bsd.subdir.mk>
