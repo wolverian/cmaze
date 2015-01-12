@@ -2,6 +2,8 @@
 #include <stdbool.h>
 #include <assert.h>
 
+#include "array.h"
+
 struct array {
 	size_t cap, size;
 	void **elems;
@@ -65,4 +67,12 @@ array_remove(struct array *a, size_t i) {
 	for (int j = i + 1; j < a->size; j++)
 		a->elems[j-1] = a->elems[j];
 	a->size--;
+}
+
+bool
+array_contains(const struct array *a, void *el, const elem_eq eq) {
+	for (int i = 0; i < a->size; i++)
+		if (eq(a->elems[i], el))
+			return true;
+	return false;
 }

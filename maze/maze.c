@@ -59,17 +59,17 @@ maze_cell_at(const struct maze *m, struct pt p) {
 }
 
 void
-maze_set_cell(const struct maze *m, int x, int y, cell c) {
-	if (x >= m->width) {
+maze_set_cell(const struct maze *m, struct pt at, cell c) {
+	if (at.x >= m->width) {
 		errno = EDOM;
-		err(EX_SOFTWARE, "x out of bounds: %d", x);
+		err(EX_SOFTWARE, "x out of bounds: %d", at.x);
 	}
-	if (y >= m->height) {
+	if (at.y >= m->height) {
 		errno = EDOM;
-		err(EX_SOFTWARE, "y out of bounds: %d", y);
+		err(EX_SOFTWARE, "y out of bounds: %d", at.y);
 	}
 	
-	m->a[y*m->width + x] = c;
+	m->a[at.y*m->width + at.x] = c;
 }
 
 char
@@ -84,7 +84,6 @@ cell_str(cell c) {
 }
 
 enum dir { UP, RIGHT, DOWN, LEFT };
-
 
 bool
 pt_eq(struct pt a, struct pt b) {
@@ -123,9 +122,13 @@ can_carve(const struct maze *m, struct pt po, enum dir d) {
 }
 
 void
-carve_maze_part(struct maze *m, int x, int y) {
+carve_maze_part(struct maze *m, struct pt from) {
 	struct array *frontier = array_create(10);
-	array_insert(frontier, &(struct pt){x, y});
+	array_insert(frontier, &from);
+
+	while (!array_empty(frontier)) {
+		struct pt *curr = array_pick(frontier);
+	}
 }
 
 void
@@ -138,7 +141,7 @@ carve_maze(struct maze *m) {
 	   only odd points are carved. */
 	for (int y = 1; y < m->height; y += 2) {
 		for (int x = 1; x < m->width; x += 2) {
-			carve_maze_part(m, x, y);
+			carve_maze_part(m, (struct pt){x, y});
 		}
 	}
 }
