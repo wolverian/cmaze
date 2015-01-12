@@ -5,3 +5,4 @@ cmaze
 cscope.out
 *.po
 *.a
+*.core
