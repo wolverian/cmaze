@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdbool.h>
 #include <assert.h>
 
 struct array {
@@ -40,4 +41,27 @@ void *
 array_get(const struct array *a, size_t i) {
 	assert(i < a->size);
 	return a->elems[i];
+}
+
+size_t
+array_size(const struct array *a) {
+	return a->size;
+}
+
+bool
+array_empty(const struct array *a) {
+	return a->size > 0;
+}
+
+void *
+array_pick(const struct array *a) {
+	return a->elems[arc4random_uniform(a->size)];
+}
+
+void *
+array_remove(struct array *a, size_t i) {
+	assert(i < a->size);
+	for (int j = i + 1; j < a->size; j++)
+		a->elems[j-1] = a->elems[j];
+	a->size--;
 }

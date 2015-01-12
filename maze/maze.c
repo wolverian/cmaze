@@ -140,11 +140,10 @@ can_carve(const struct maze *m, const struct pt *po, enum dir d) {
 	return true;
 }
 
-
-
-
 void
 carve_maze_part(struct maze *m, int x, int y) {
+	struct array *frontier = array_create(10);
+	array_insert(frontier, &(struct pt){x, y});
 }
 
 void
