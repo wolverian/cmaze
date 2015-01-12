@@ -35,6 +35,7 @@ array_insert(struct array *a, void *el) {
 	if (a->size == a->cap)
 		array_grow(a);
 	a->elems[a->size] = el;
+	a->size++;
 }
 
 void *

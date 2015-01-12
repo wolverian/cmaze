@@ -1,5 +1,5 @@
+COPTS+=-std=c99
 PROG=arrtest
-DPADD+=../array.a
-LDADD+=-larray
+OBJS+=../array.o
 
 .include <bsd.regress.mk>

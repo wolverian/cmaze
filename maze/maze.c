@@ -18,6 +18,10 @@ struct maze {
 	cell *a;
 };
 
+struct pt {
+	int x, y;
+};
+
 struct maze *
 maze_create(int height, int width) {
 	if (height > 0 && height > INT64_MAX / width) {
@@ -41,17 +45,17 @@ maze_free(struct maze *m) {
 }
 
 cell
-maze_cell_at(const struct maze *m, int x, int y) {
-	if (x >= m->width) {
+maze_cell_at(const struct maze *m, struct pt p) {
+	if (p.x >= m->width) {
 		errno = EDOM;
-		err(EX_SOFTWARE, "x out of bounds: %d", x);
+		err(EX_SOFTWARE, "x out of bounds: %d", p.x);
 	}
-	if (y >= m->height) {
+	if (p.y >= m->height) {
 		errno = EDOM;
-		err(EX_SOFTWARE, "y out of bounds: %d", y);
+		err(EX_SOFTWARE, "y out of bounds: %d", p.y);
 	}
 
-	return m->a[y*m->width + x];
+	return m->a[p.y*m->width + p.x];
 }
 
 void
@@ -81,61 +85,39 @@ cell_str(cell c) {
 
 enum dir { UP, RIGHT, DOWN, LEFT };
 
-struct pt {
-	int x, y;
-};
 
 bool
-pt_eq(const struct pt *a, const struct pt *b) {
-	return a->x == b->x && a->y == b->y;
+pt_eq(struct pt a, struct pt b) {
+	return a.x == b.x && a.y == b.y;
 }
 
-struct pt *
-pt_create(int x, int y) {
-	struct pt *p = malloc(sizeof(struct pt));
-	p->x = x;
-	p->y = y;
-	return p;
-}
-
-struct pt *
-pt_add_dir(const struct pt *p, enum dir d) {
-	int x = p->x;
-	int y = p->y;
+struct pt
+pt_add_dir(struct pt p, enum dir d) {
+	int x = p.x;
+	int y = p.y;
 	switch (d) {
 		case UP: y -= 1; break;
 		case RIGHT: x += 1; break;
 		case DOWN: y += 1; break;
 		case LEFT: x -= 1; break;
 	}
-	return pt_create(x, y);
-}
-
-void
-pt_add_dir_inplace(struct pt *p, enum dir d) {
-	switch (d) {
-		case UP: p->y -= 1; break;
-		case RIGHT: p->x += 1; break;
-		case DOWN: p->y += 1; break;
-		case LEFT: p->y -= 1; break;
-	}
+	return (struct pt){x, y};
 }
 
 bool
-can_carve(const struct maze *m, const struct pt *po, enum dir d) {
-	struct pt *p = pt_add_dir(po, d);
-	pt_add_dir_inplace(p, d);
+can_carve(const struct maze *m, struct pt po, enum dir d) {
+	struct pt p = pt_add_dir(pt_add_dir(po, d), d);
 
-	if (p->x < 0 || p-> y < 0 || p->x >= m->width || p->y >= m->height)
+	if (p.x < 0 || p. y < 0 || p.x >= m->width || p.y >= m->height)
 		return false;
 
-	if (maze_cell_at(m, p->x, p->y) != WALL)
+	if (maze_cell_at(m, p) != WALL)
 		return false;
 
-	pt_add_dir_inplace(p, d);
+	p = pt_add_dir(p, d);
 
-	if (p->x >= m->width) return false;
-	if (p->y >= m->height) return false;
+	if (p.x >= m->width) return false;
+	if (p.y >= m->height) return false;
 
 	return true;
 }
@@ -184,7 +166,7 @@ main(int argc, char **argv) {
 
 	for (int y = 0; y < m->height; y++) {
 		for (int x = 0; x < m->width; x++) {
-			putchar(cell_str(maze_cell_at(m, x, y)));
+			putchar(cell_str(maze_cell_at(m, (struct pt){x, y})));
 		}
 		puts("");
 	}
