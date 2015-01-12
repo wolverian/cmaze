@@ -22,6 +22,10 @@ struct pt {
 	int x, y;
 };
 
+enum dir {UP, RIGHT, DOWN, LEFT};
+
+const enum dir DIRS[] = {UP, RIGHT, DOWN, LEFT};
+
 struct maze *
 maze_create(int height, int width) {
 	if (height > 0 && height > INT64_MAX / width) {
@@ -76,18 +80,21 @@ char
 cell_str(cell c) {
 	switch (c) {
 		case 0: return '#';
-		case 1: return '.';
+		case 1: return ' ';
 	}
 	errx(EX_SOFTWARE, "invalid cell");
 	// not reached
 	return 0;
 }
 
-enum dir { UP, RIGHT, DOWN, LEFT };
-
 bool
 pt_eq(struct pt a, struct pt b) {
 	return a.x == b.x && a.y == b.y;
+}
+
+bool
+pt_eq_p(struct pt *a, struct pt *b) {
+	return a->x == b->x && a->y == b->y;
 }
 
 struct pt
@@ -127,7 +134,28 @@ carve_maze_part(struct maze *m, struct pt from) {
 	array_insert(frontier, &from);
 
 	while (!array_empty(frontier)) {
-		struct pt *curr = array_pick(frontier);
+		struct pt curr = *(struct pt *)array_pick(frontier);
+		struct array *unmade = array_create(4);
+
+		for (int i = 0; i < nitems(DIRS); i++) {
+			enum dir *d = (enum dir *)&DIRS[i];
+			if (can_carve(m, curr, *d)) {
+				array_insert(unmade, d);
+			}
+		}
+
+		if (!array_empty(unmade)) {
+			enum dir d = *(enum dir *)array_pick(unmade);
+			struct pt wall = pt_add_dir(curr, d);
+			struct pt beyond = pt_add_dir(wall, d);
+
+			maze_set_cell(m, wall, CLEAR);
+			maze_set_cell(m, beyond, CLEAR);
+
+			array_insert(frontier, &beyond);
+		} else {
+			array_remove_elems(frontier, &curr, (elem_eq)pt_eq_p);
+		}
 	}
 }
 
@@ -139,8 +167,8 @@ carve_maze(struct maze *m) {
 	   carving a maze from every point (x, y) where x and y are both odd.
 	   This ensures that the maze is filled as much as possible and that
 	   only odd points are carved. */
-	for (int y = 1; y < m->height; y += 2) {
-		for (int x = 1; x < m->width; x += 2) {
+	for (int y = 1; y < m->height - 1; y += 2) {
+		for (int x = 1; x < m->width - 1; x += 2) {
 			carve_maze_part(m, (struct pt){x, y});
 		}
 	}

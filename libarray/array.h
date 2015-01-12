@@ -30,6 +30,9 @@ void *
 array_remove(struct array *a, size_t i);
 
 bool
-array_contains(const struct array *a, void *el, const elem_eq eq);
+array_remove_elems(struct array *a, const void *el, const elem_eq eq);
+
+bool
+array_contains(const struct array *a, const void *el, const elem_eq eq);
 
 #endif

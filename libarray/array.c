@@ -53,7 +53,7 @@ array_size(const struct array *a) {
 
 bool
 array_empty(const struct array *a) {
-	return a->size > 0;
+	return a->size == 0;
 }
 
 void *
@@ -64,13 +64,28 @@ array_pick(const struct array *a) {
 void *
 array_remove(struct array *a, size_t i) {
 	assert(i < a->size);
+	void *el = a->elems[i];
 	for (int j = i + 1; j < a->size; j++)
 		a->elems[j-1] = a->elems[j];
 	a->size--;
+	return el;
 }
 
 bool
-array_contains(const struct array *a, void *el, const elem_eq eq) {
+array_remove_elems(struct array *a, const void *el, const elem_eq eq) {
+	bool removed = false;
+	for (int i = 0; i < a->size; i++) {
+		void *x = a->elems[i];
+		if (eq(x, el)) {
+			array_remove(a, i);
+			removed = true;
+		}
+	}
+	return removed;
+}
+
+bool
+array_contains(const struct array *a, const void *el, const elem_eq eq) {
 	for (int i = 0; i < a->size; i++)
 		if (eq(a->elems[i], el))
 			return true;
