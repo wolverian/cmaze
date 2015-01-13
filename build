@@ -1,5 +1,0 @@
-#!/bin/sh
-
-export SYSTEM=`uname`
-
-make -f Makefile.$SYSTEM

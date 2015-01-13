@@ -1,3 +1,3 @@
-SYSTEM!=uname
+SUBDIR=libarray maze
 
-.include "Makefile.${SYSTEM}"
+.include <bsd.subdir.mk>
