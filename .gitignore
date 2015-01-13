@@ -6,3 +6,7 @@ cscope.out
 *.po
 *.a
 *.core
+.depend
+*.d
+*.dylib
+*.so

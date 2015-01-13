@@ -7,6 +7,9 @@
 #include <sys/param.h>
 #include <sysexits.h>
 
+#include "../libcross/nitems.h"
+#include "../libcross/reallocarray.h"
+#include "../libcross/strtonum.h"
 #include "../libarray/array.h"
 
 typedef int cell;

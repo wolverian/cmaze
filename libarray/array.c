@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <assert.h>
 
+#include "../libcross/reallocarray.h"
 #include "array.h"
 
 struct array {

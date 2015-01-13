@@ -1,3 +1,3 @@
-SUBDIR=libarray maze
+SUBDIR=libcross libarray maze
 
 .include <bsd.subdir.mk>
