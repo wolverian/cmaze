@@ -63,18 +63,20 @@ carve_maze_part(struct maze *m, struct pt from) {
 
 bool
 can_carve(const struct maze *m, struct pt po, enum dir d) {
-	struct pt p = pt_add_dir(pt_add_dir(po, d), d);
+	/* Is the next cell in that direction something we can carve? */
+	struct pt to = pt_add_dir(pt_add_dir(po, d), d);
 
-	if (p.x < 0 || p. y < 0 || p.x >= m->width || p.y >= m->height)
+	if (to.x < 0 || to. y < 0 || to.x >= m->width || to.y >= m->height)
 		return false;
 
-	if (maze_cell_at(m, p) != WALL)
+	if (maze_cell_at(m, to) != WALL)
 		return false;
 
-	p = pt_add_dir(p, d);
+	/* Would carving that cell cause a hole next to an edge? */
+	struct pt beyond = pt_add_dir(to, d);
 
-	if (p.x >= m->width) return false;
-	if (p.y >= m->height) return false;
+	if (beyond.x >= m->width) return false;
+	if (beyond.y >= m->height) return false;
 
 	return true;
 }
