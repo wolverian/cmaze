@@ -17,3 +17,7 @@ Learning C.
 ### Infrastructure
 
 - [ ] Use native functions on OpenBSD.
+
+## License
+
+cmaze is available under the ISC license. See the LICENSE file for more information.
