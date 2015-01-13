@@ -4,6 +4,11 @@ INCS=array.h
 SRCS=array.c
 OBJS+=../libcross/*.o
 DPADD+=../libcross/libcross.a
-#SUBDIR=test
+
+SYSTEM!=uname
+
+.if ${SYSTEM} == OpenBSD
+SUBDIR=test
+.endif
 
 .include <bsd.lib.mk>
