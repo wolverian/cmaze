@@ -1,0 +1,4 @@
+ALL:
+	(cd libarray && make -f Makefile.${SYSTEM})
+	(cd maze && make -f Makefile.${SYSTEM})
+
