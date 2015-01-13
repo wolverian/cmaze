@@ -17,6 +17,7 @@ Learning C.
 ### Infrastructure
 
 - [ ] Use native functions on OpenBSD.
+- [ ] Run tests on Darwin too.
 
 ## License
 
