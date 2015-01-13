@@ -67,6 +67,4 @@ cell_str(cell c) {
 		case 1: return ' ';
 	}
 	errx(EX_SOFTWARE, "invalid cell");
-	// not reached
-	return 0;
 }
