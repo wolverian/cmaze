@@ -110,6 +110,15 @@ pt_add_dir(struct pt p, enum dir d) {
 	return (struct pt){x, y};
 }
 
+struct pt *
+pt_add_dir_p(struct pt p, enum dir d) {
+	struct pt *to = malloc(sizeof(struct pt));
+	struct pt temp = pt_add_dir(p, d);
+	to->x = temp.x;
+	to->y = temp.y;
+	return to;
+}
+
 bool
 can_carve(const struct maze *m, struct pt po, enum dir d) {
 	struct pt p = pt_add_dir(pt_add_dir(po, d), d);
@@ -134,27 +143,28 @@ carve_maze_part(struct maze *m, struct pt from) {
 	array_insert(frontier, &from);
 
 	while (!array_empty(frontier)) {
-		struct pt curr = *(struct pt *)array_pick(frontier);
+		struct pt *curr = (struct pt *)array_pick(frontier);
 		struct array *unmade = array_create(4);
 
 		for (int i = 0; i < nitems(DIRS); i++) {
 			enum dir *d = (enum dir *)&DIRS[i];
-			if (can_carve(m, curr, *d)) {
+			if (can_carve(m, *curr, *d)) {
 				array_insert(unmade, d);
 			}
 		}
 
 		if (!array_empty(unmade)) {
 			enum dir d = *(enum dir *)array_pick(unmade);
-			struct pt wall = pt_add_dir(curr, d);
-			struct pt beyond = pt_add_dir(wall, d);
 
-			maze_set_cell(m, wall, CLEAR);
-			maze_set_cell(m, beyond, CLEAR);
+			struct pt *wall = pt_add_dir_p(*curr, d);
+			struct pt *beyond = pt_add_dir_p(*wall, d);
 
-			array_insert(frontier, &beyond);
+			maze_set_cell(m, *wall, CLEAR);
+			maze_set_cell(m, *beyond, CLEAR);
+
+			array_insert(frontier, beyond);
 		} else {
-			array_remove_elems(frontier, &curr, (elem_eq)pt_eq_p);
+			array_remove_elems(frontier, curr, (elem_eq)pt_eq_p);
 		}
 	}
 }
