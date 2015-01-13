@@ -14,13 +14,13 @@ pt_eq(struct pt a, struct pt b) {
 }
 
 void
-test_insertion();
+test_insertion(void);
 
 void
-test_removal();
+test_removal(void);
 
 void
-test_contains();
+test_contains(void);
 
 int
 main(int argc, char **argv) {

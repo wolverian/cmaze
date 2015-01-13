@@ -65,7 +65,7 @@ void *
 array_remove(struct array *a, size_t i) {
 	assert(i < a->size);
 	void *el = a->elems[i];
-	for (int j = i + 1; j < a->size; j++)
+	for (size_t j = i + 1; j < a->size; j++)
 		a->elems[j-1] = a->elems[j];
 	a->size--;
 	return el;
@@ -74,7 +74,7 @@ array_remove(struct array *a, size_t i) {
 bool
 array_remove_elems(struct array *a, const void *el, const elem_eq eq) {
 	bool removed = false;
-	for (int i = 0; i < a->size; i++) {
+	for (size_t i = 0; i < a->size; i++) {
 		void *x = a->elems[i];
 		if (eq(x, el)) {
 			array_remove(a, i);
@@ -86,7 +86,7 @@ array_remove_elems(struct array *a, const void *el, const elem_eq eq) {
 
 bool
 array_contains(const struct array *a, const void *el, const elem_eq eq) {
-	for (int i = 0; i < a->size; i++)
+	for (size_t i = 0; i < a->size; i++)
 		if (eq(a->elems[i], el))
 			return true;
 	return false;
