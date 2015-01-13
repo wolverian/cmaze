@@ -27,7 +27,7 @@ enum dir {UP, RIGHT, DOWN, LEFT};
 const enum dir DIRS[] = {UP, RIGHT, DOWN, LEFT};
 
 struct maze *
-maze_create(int height, int width) {
+maze_create(size_t width, size_t height) {
 	if (height > 0 && height > INT64_MAX / width) {
 		errno = ENOMEM;
 		err(EX_SOFTWARE, "overflow");
@@ -186,19 +186,34 @@ carve_maze(struct maze *m) {
 
 int
 main(int argc, char **argv) {
-	int w, h;
+	size_t w, h;
 
 	if (argc == 2) {
 		const char *e;
-		long long x = strtonum(argv[1], 0, 400, &e);
+		long long x = strtonum(argv[1], 1, 400, &e);
 		if (e) {
 			errno = EDOM;
-			err(EX_USAGE, "size must 0-400");
+			err(EX_USAGE, "size must 1-400");
 		}
 		w = x;
 		h = x;
+	} else if (argc == 3) {
+		const char *e;
+		long long x = strtonum(argv[1], 1, 400, &e);
+		if (e) {
+			errno = EDOM;
+			err(EX_USAGE, "width must 1-400");
+		}
+		e = NULL;
+		long long y = strtonum(argv[2], 1, 400, &e);
+		if (e) {
+			errno = EDOM;
+			err(EX_USAGE, "height must 1-400");
+		}
+		w = x;
+		h = y;
 	} else {
-		errx(EX_USAGE, "usage: %s size", argv[0]);
+		errx(EX_USAGE, "usage: %s size | %s width height", argv[0], argv[0]);
 	}
 
 	struct maze *m = maze_create(w, h);
