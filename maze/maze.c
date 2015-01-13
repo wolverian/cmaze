@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <err.h>
 #include <errno.h>
 #include <sysexits.h>
