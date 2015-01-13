@@ -20,4 +20,4 @@ Learning C.
 
 ## License
 
-cmaze is available under the ISC license. See the LICENSE file for more information.
+maze is available under the ISC license. See the LICENSE file for more information.
