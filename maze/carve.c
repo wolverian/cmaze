@@ -8,14 +8,19 @@
 #include "maze.h"
 #include "carve.h"
 
-void
+static void
+carve_maze_rooms(struct maze *m);
+
+static void
 carve_maze_part(struct maze *m, struct pt from);
 
-bool
+static bool
 can_carve(const struct maze *m, struct pt po, enum dir d);
 
 void
 carve_maze(struct maze *m) {
+  carve_maze_rooms(m);
+
 	/* Q: Why do we carve in a loop?
 	   A: The carving algorithm can trap itself, i.e. it is not guaranteed
 	   to fill the available space. We can brute force around this by
@@ -29,7 +34,11 @@ carve_maze(struct maze *m) {
 	}
 }
 
-void
+static void
+carve_maze_rooms(struct maze *m) {
+}
+
+static void
 carve_maze_part(struct maze *m, struct pt from) {
 	struct array *frontier = array_create(10);
 	array_insert(frontier, &from);
@@ -61,7 +70,7 @@ carve_maze_part(struct maze *m, struct pt from) {
 	}
 }
 
-bool
+static bool
 can_carve(const struct maze *m, struct pt po, enum dir d) {
 	/* Is the next cell in that direction something we can carve? */
 	struct pt to = pt_add_dir(pt_add_dir(po, d), d);
