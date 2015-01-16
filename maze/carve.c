@@ -36,6 +36,7 @@ carve_maze(struct maze *m) {
 
 static void
 carve_maze_rooms(struct maze *m) {
+	
 }
 
 static void
