@@ -2,4 +2,9 @@
 
 export SYSTEM=`uname`
 
-make "$@"
+case $SYSTEM in
+    *BSD) make=make ;;
+    *) make=bmake   ;;
+esac
+
+$make "$@"
