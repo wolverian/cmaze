@@ -19,7 +19,7 @@ Learning C.
 
 ## Build
 
-    bmake
+    ./build
 
 ## Todo
 
