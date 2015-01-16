@@ -1,8 +1,8 @@
-#include <stdlib.h>
-#include <stdbool.h>
-#include <stdint.h>
 #include <err.h>
 #include <errno.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdlib.h>
 #include <sysexits.h>
 
 #include "../libcross/reallocarray.h"
