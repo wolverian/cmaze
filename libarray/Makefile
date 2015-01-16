@@ -2,13 +2,12 @@ COPTS=-std=c99
 LIB=array
 INCS=array.h
 SRCS=array.c
-OBJS+=../libcross/*.o
-DPADD+=../libcross/libcross.a
-
-SYSTEM!=uname
 
 .if ${SYSTEM} == OpenBSD
 SUBDIR=test
+.else
+OBJS+=../libcross/*.o
+DPADD+=../libcross/libcross.a
 .endif
 
 .include <bsd.lib.mk>
