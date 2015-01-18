@@ -24,8 +24,8 @@ can_carve(const struct maze *, struct pt, enum dir);
 void
 carve_maze(struct maze *m) {
 	carve_maze_rooms(m, 20, (struct room_params){
-		min: (struct pt){x: 3, y: 3},
-		max: (struct pt){x: 9, y: 9}
+		.min = (struct pt){.x = 3, .y = 3},
+		.max = (struct pt){.x = 9, .y = 9}
 	});
 
 	/* Q: Why do we carve in a loop?
