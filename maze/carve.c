@@ -1,5 +1,6 @@
-#include <stdlib.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 #include "../libcross/nitems.h"
 #include "../libarray/array.h"
@@ -8,18 +9,25 @@
 #include "maze.h"
 #include "carve.h"
 
-static void
-carve_maze_rooms(struct maze *m);
+struct room_params {
+	struct pt min, max;
+};
 
 static void
-carve_maze_part(struct maze *m, struct pt from);
+carve_maze_rooms(struct maze *, size_t, struct room_params);
+
+static void
+carve_maze_part(struct maze *, struct pt);
 
 static bool
-can_carve(const struct maze *m, struct pt po, enum dir d);
+can_carve(const struct maze *, struct pt, enum dir);
 
 void
 carve_maze(struct maze *m) {
-  carve_maze_rooms(m);
+	carve_maze_rooms(m, 20, (struct room_params){
+		min: (struct pt){x: 3, y: 3},
+		max: (struct pt){x: 9, y: 9}
+	});
 
 	/* Q: Why do we carve in a loop?
 	   A: The carving algorithm can trap itself, i.e. it is not guaranteed
@@ -34,9 +42,76 @@ carve_maze(struct maze *m) {
 	}
 }
 
+struct room {
+	struct pt min, max;
+};
+
+struct room *
+room_create(struct pt min, struct pt size) {
+	struct room *r = malloc(sizeof(struct room));
+	r->min.x = min.x;
+	r->min.y = min.y;
+	r->max.x = min.x + size.x;
+	r->max.y = min.y + size.y;
+	return r;
+}
+
 static void
-carve_maze_rooms(struct maze *m) {
-	
+room_free(struct room *r) {
+	free(r);
+}
+
+static bool
+rooms_overlap(struct room *a, struct room *b) {
+	return (a->min.x < b->max.x && a->max.x > b->min.x &&
+		a->min.y < b->max.y && a->max.y > b->min.y);
+}
+
+static void
+carve_maze_rooms(struct maze *m, size_t max_tries, struct room_params rp) {
+	struct array *rooms = array_create(10);
+
+	for (size_t i = 0; i < max_tries; i++) {
+		size_t y = arc4random_uniform(m->height/2)*2 + 1;
+		size_t x = arc4random_uniform(m->width/2)*2 + 1;
+		size_t height = arc4random_uniform(rp.max.y/2)*2 + rp.min.y;
+		size_t width = arc4random_uniform(rp.max.x/2)*2 + rp.min.x;
+
+		struct room *r = room_create((struct pt){x, y}, (struct pt){width, height});
+
+		printf("room %d: (%d, %d), (%d, %d)\n", i, r->min.x, r->min.y, r->max.x, r->max.y);
+
+		bool overlap = false;
+
+		for (size_t j = 0; j < array_size(rooms); j++) {
+			if (rooms_overlap(r, array_get(rooms, j))) {
+				overlap = true;
+			}
+		}
+
+		bool in_bounds = r->max.x < m->width && r->max.y < m->height;
+
+		if (overlap || !in_bounds)
+			room_free(r);
+		else
+			array_insert(rooms, r);
+	}
+
+	printf("we got %d rooms\n", array_size(rooms));
+
+	for (size_t i = 0; i < array_size(rooms); i++) {
+		struct room *r = array_get(rooms, i);
+		region reg = maze_new_region(m);
+
+		printf("carving room %d: (%d, %d)-(%d, %d)\n", i, r->min.x, r->min.y, r->max.x, r->max.y);
+
+		for (size_t y = r->min.y; y < r->max.y; y++) {
+			for (size_t x = r->min.x; x < r->max.x; x++) {
+				maze_set_cell(m, (struct pt){x, y}, CLEAR);
+				maze_set_region(m, (struct pt){x, y}, reg);
+			}
+		}
+	}
 }
 
 static void

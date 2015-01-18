@@ -21,7 +21,9 @@ maze_create(size_t width, size_t height) {
 
 	m->width = width;
 	m->height = height;
-	m->a = reallocarray(NULL, width*height, sizeof(cell));
+	m->region_counter = 0;
+	m->a = reallocarray(NULL, width*height, sizeof(enum cell));
+	m->r = reallocarray(NULL, width*height, sizeof(region));
 	
 	return m;
 }
@@ -29,10 +31,11 @@ maze_create(size_t width, size_t height) {
 void
 maze_free(struct maze *m) {
 	free(m->a);
+	free(m->r);
 	free(m);
 }
 
-cell
+enum cell
 maze_cell_at(const struct maze *m, struct pt p) {
 	if (p.x >= m->width) {
 		errno = EDOM;
@@ -47,7 +50,7 @@ maze_cell_at(const struct maze *m, struct pt p) {
 }
 
 void
-maze_set_cell(const struct maze *m, struct pt at, cell c) {
+maze_set_cell(struct maze *m, struct pt at, enum cell c) {
 	if (at.x >= m->width) {
 		errno = EDOM;
 		err(EX_SOFTWARE, "x out of bounds: %d", at.x);
@@ -60,8 +63,18 @@ maze_set_cell(const struct maze *m, struct pt at, cell c) {
 	m->a[at.y*m->width + at.x] = c;
 }
 
+void
+maze_set_region(struct maze *m, struct pt at, region r) {
+	m->r[at.y*m->width + at.x] = r;
+}
+
+region
+maze_new_region(struct maze *m) {
+	return m->region_counter++;
+}
+
 char
-cell_str(cell c) {
+cell_str(enum cell c) {
 	switch (c) {
 		case 0: return '#';
 		case 1: return ' ';

@@ -1,28 +1,36 @@
 #ifndef _MAZE_H_
 #define _MAZE_H_
 
-typedef int cell;
+enum cell { WALL, CLEAR };
 
-enum celltype { WALL, CLEAR };
+typedef int region;
 
 struct maze {
 	int64_t width, height;
-	cell *a;
+	int32_t region_counter;
+	enum cell *a;
+	region *r;
 };
 
 struct maze *
-maze_create(size_t width, size_t height);
+maze_create(size_t, size_t);
 
 void
-maze_free(struct maze *m);
+maze_free(struct maze *);
 
-cell
-maze_cell_at(const struct maze *m, struct pt p);
+enum cell
+maze_cell_at(const struct maze *, struct pt);
 
 void
-maze_set_cell(const struct maze *m, struct pt at, cell c);
+maze_set_cell(struct maze *, struct pt, enum cell);
+
+void
+maze_set_region(struct maze *, struct pt, region);
+
+region
+maze_new_region(struct maze *);
 
 char
-cell_str(cell c);
+cell_str(enum cell c);
 
 #endif
