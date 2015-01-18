@@ -1,6 +1,5 @@
 #include <stdbool.h>
 #include <stdlib.h>
-#include <stdio.h>
 
 #include "../libcross/nitems.h"
 #include "../libarray/array.h"
@@ -79,8 +78,6 @@ carve_maze_rooms(struct maze *m, size_t max_tries, struct room_params rp) {
 
 		struct room *r = room_create((struct pt){x, y}, (struct pt){width, height});
 
-		printf("room %d: (%d, %d), (%d, %d)\n", i, r->min.x, r->min.y, r->max.x, r->max.y);
-
 		bool overlap = false;
 
 		for (size_t j = 0; j < array_size(rooms); j++) {
@@ -97,13 +94,9 @@ carve_maze_rooms(struct maze *m, size_t max_tries, struct room_params rp) {
 			array_insert(rooms, r);
 	}
 
-	printf("we got %d rooms\n", array_size(rooms));
-
 	for (size_t i = 0; i < array_size(rooms); i++) {
 		struct room *r = array_get(rooms, i);
 		region reg = maze_new_region(m);
-
-		printf("carving room %d: (%d, %d)-(%d, %d)\n", i, r->min.x, r->min.y, r->max.x, r->max.y);
 
 		for (size_t y = r->min.y; y < r->max.y; y++) {
 			for (size_t x = r->min.x; x < r->max.x; x++) {
