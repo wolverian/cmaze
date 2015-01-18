@@ -105,12 +105,17 @@ carve_maze_rooms(struct maze *m, size_t max_tries, struct room_params rp) {
 			}
 		}
 	}
+
+	array_free(rooms, (elem_free)room_free);
 }
 
 static void
 carve_maze_part(struct maze *m, struct pt from) {
 	struct array *frontier = array_create(10);
-	array_insert(frontier, &from);
+	struct pt *f = malloc(sizeof(struct pt));
+	f->x = from.x;
+	f->y = from.y;
+	array_insert(frontier, f);
 
 	while (!array_empty(frontier)) {
 		struct pt *curr = (struct pt *)array_pick(frontier);
@@ -126,17 +131,20 @@ carve_maze_part(struct maze *m, struct pt from) {
 		if (!array_empty(unmade)) {
 			enum dir d = *(enum dir *)array_pick(unmade);
 
-			struct pt *wall = pt_add_dir_p(*curr, d);
-			struct pt *beyond = pt_add_dir_p(*wall, d);
+			struct pt wall = pt_add_dir(*curr, d);
+			struct pt *beyond = pt_add_dir_p(wall, d);
 
-			maze_set_cell(m, *wall, CLEAR);
+			maze_set_cell(m, wall, CLEAR);
 			maze_set_cell(m, *beyond, CLEAR);
 
 			array_insert(frontier, beyond);
 		} else {
 			array_remove_elems(frontier, curr, (elem_eq)pt_eq_p);
+			free(curr);
 		}
 	}
+
+	array_free(frontier, NULL);
 }
 
 static bool

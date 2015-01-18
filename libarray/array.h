@@ -3,16 +3,17 @@
 
 struct array;
 
-typedef bool (*elem_eq)(const void *a, const void *b);
+typedef bool (*elem_eq)(const void *, const void *);
+typedef void (*elem_free)(void *);
 
 struct array *
 array_create(size_t cap);
 
 void
-array_free(struct array *a);
+array_free(struct array *, elem_free f);
 
 void
-array_insert(struct array *a, void *el);
+array_insert(struct array *, void *);
 
 void *
 array_get(const struct array *a, size_t i);

@@ -20,7 +20,9 @@ array_create(size_t cap) {
 }
 
 void
-array_free(struct array *a) {
+array_free(struct array *a, elem_free f) {
+	for (int i = 0; i < a->size; i++)
+		f(a->elems[i]);
 	free(a->elems);
 	free(a);
 }
