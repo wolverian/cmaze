@@ -7,4 +7,9 @@ case $SYSTEM in
     *) make=bmake   ;;
 esac
 
+# Hack to hide plan9 binaries for the duration of the build
+if test "${path#*plan9}" != "$path"; then
+	path=$PATH
+fi
+
 $make "$@"
