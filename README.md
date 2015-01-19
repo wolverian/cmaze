@@ -21,6 +21,10 @@ Learning C.
 
     ./build
 
+## Description
+
+Based on <http://journal.stuffwithstuff.com/2014/12/21/rooms-and-mazes/>.
+
 ## Todo
 
 ### Features
