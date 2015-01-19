@@ -22,8 +22,8 @@ maze_create(size_t width, size_t height) {
 	m->width = width;
 	m->height = height;
 	m->region_counter = 0;
-	m->a = reallocarray(NULL, width*height, sizeof(enum cell));
-	m->r = reallocarray(NULL, width*height, sizeof(region));
+	m->a = calloc(width*height, sizeof(enum cell));
+	m->r = calloc(width*height, sizeof(region));
 	
 	return m;
 }
@@ -79,5 +79,5 @@ cell_str(enum cell c) {
 		case 0: return '#';
 		case 1: return ' ';
 	}
-	errx(EX_SOFTWARE, "invalid cell");
+	errx(EX_SOFTWARE, "invalid cell: %d", c);
 }
