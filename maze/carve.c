@@ -71,6 +71,7 @@ carve_maze_rooms(struct maze *m, size_t max_tries, struct room_params rp) {
 	struct array *rooms = array_create(10);
 
 	for (size_t i = 0; i < max_tries; i++) {
+		/* Is this mess even correct? */
 		size_t y = arc4random_uniform(m->height/2)*2 + 1;
 		size_t x = arc4random_uniform(m->width/2)*2 + 1;
 		size_t height = arc4random_uniform(rp.max.y/2)*2 + rp.min.y;
