@@ -3,8 +3,8 @@
 export SYSTEM=`uname`
 
 case $SYSTEM in
-    *BSD) make=make ;;
-    *) make=bmake   ;;
+    *BSD) make=make  ;;
+    *)    make=bmake ;;
 esac
 
 # Hack to hide plan9 binaries for the duration of the build

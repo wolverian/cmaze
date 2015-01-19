@@ -25,14 +25,15 @@ Learning C.
 
 ### Features
 
-- [ ] Carve rooms.
-- [ ] Join corridors.
+- [x] Carve rooms.
+- [ ] Join corridors/rooms.
 - [ ] Prune corridors.
 
 ### Infrastructure
 
 - [ ] Use native functions on OpenBSD.
 - [ ] Run tests on Darwin too.
+- [ ] abort() if malloc fails.
 
 ## License
 
