@@ -1,7 +1,7 @@
 #ifndef _MAZE_H_
 #define _MAZE_H_
 
-enum cell { WALL, CLEAR };
+enum cell { WALL, CLEAR, ATTENTION };
 
 typedef int region;
 
@@ -26,6 +26,9 @@ maze_set_cell(struct maze *, struct pt, enum cell);
 
 void
 maze_set_region(struct maze *, struct pt, region);
+
+region
+maze_region_at(const struct maze *, struct pt);
 
 region
 maze_new_region(struct maze *);

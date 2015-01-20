@@ -5,6 +5,14 @@
 
 const enum dir DIRS[] = {UP, RIGHT, DOWN, LEFT};
 
+struct pt *
+pt_create(int x, int y) {
+	struct pt *p = malloc(sizeof(struct pt));
+	p->x = x;
+	p->y = y;
+	return p;
+}
+
 bool
 pt_eq(struct pt a, struct pt b) {
 	return a.x == b.x && a.y == b.y;

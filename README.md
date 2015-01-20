@@ -35,7 +35,7 @@ Based on <http://journal.stuffwithstuff.com/2014/12/21/rooms-and-mazes/>.
 ### Features
 
 - [x] Carve rooms.
-- [ ] Join corridors/rooms.
+- [x] Join corridors/rooms.
 - [ ] Prune corridors.
 
 ### Infrastructure

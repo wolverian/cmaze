@@ -69,6 +69,11 @@ maze_set_region(struct maze *m, struct pt at, region r) {
 }
 
 region
+maze_region_at(const struct maze *m, struct pt at) {
+	return m->r[at.y*m->width + at.x];
+}
+
+region
 maze_new_region(struct maze *m) {
 	return m->region_counter++;
 }
@@ -76,8 +81,9 @@ maze_new_region(struct maze *m) {
 char
 cell_str(enum cell c) {
 	switch (c) {
-		case 0: return '#';
-		case 1: return ' ';
+		case WALL: return '#';
+		case CLEAR: return ' ';
+		case ATTENTION: return 'x';
 	}
 	errx(EX_SOFTWARE, "invalid cell: %d", c);
 }

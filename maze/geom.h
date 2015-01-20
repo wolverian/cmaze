@@ -9,6 +9,8 @@ struct pt {
 	int x, y;
 };
 
+struct pt * pt_create(int x, int y);
+
 bool pt_eq(struct pt a, struct pt b);
 bool pt_eq_p(struct pt *a, struct pt *b);
 

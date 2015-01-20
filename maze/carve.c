@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "../libcross/nitems.h"
@@ -8,6 +9,11 @@
 #include "maze.h"
 #include "carve.h"
 
+#define min(a,b) \
+	({	__typeof__ (a) _a = (a); \
+		__typeof__ (b) _b = (b); \
+		_a < _b ? _a : _b; })
+
 struct room_params {
 	struct pt min, max;
 };
@@ -16,10 +22,13 @@ static void
 carve_maze_rooms(struct maze *, size_t, struct room_params);
 
 static void
-carve_maze_part(struct maze *, struct pt);
+carve_maze_part(struct maze *, struct pt, region reg);
 
 static bool
 can_carve(const struct maze *, struct pt, enum dir);
+
+static void
+carve_connections(struct maze *m, size_t n);
 
 void
 carve_maze(struct maze *m) {
@@ -34,11 +43,16 @@ carve_maze(struct maze *m) {
 	   carving a maze from every point (x, y) where x and y are both odd.
 	   This ensures that the maze is filled as much as possible and that
 	   only odd points are carved. */
+	   
+	region tunnel_reg = maze_new_region(m);
+	 
 	for (int y = 1; y < m->height - 1; y += 2) {
 		for (int x = 1; x < m->width - 1; x += 2) {
-			carve_maze_part(m, (struct pt){x, y});
+			carve_maze_part(m, (struct pt){x, y}, tunnel_reg);
 		}
 	}
+	
+	carve_connections(m, 15);
 }
 
 struct room {
@@ -111,7 +125,7 @@ carve_maze_rooms(struct maze *m, size_t max_tries, struct room_params rp) {
 }
 
 static void
-carve_maze_part(struct maze *m, struct pt from) {
+carve_maze_part(struct maze *m, struct pt from, region reg) {
 	struct array *frontier = array_create(10);
 	struct pt *f = malloc(sizeof(struct pt));
 	f->x = from.x;
@@ -136,7 +150,9 @@ carve_maze_part(struct maze *m, struct pt from) {
 			struct pt *beyond = pt_add_dir_p(wall, d);
 
 			maze_set_cell(m, wall, CLEAR);
+			maze_set_region(m, wall, reg);
 			maze_set_cell(m, *beyond, CLEAR);
+			maze_set_region(m, *beyond, reg);
 
 			array_insert(frontier, beyond);
 		} else {
@@ -146,6 +162,51 @@ carve_maze_part(struct maze *m, struct pt from) {
 	}
 
 	array_free(frontier, NULL);
+}
+
+static void
+carve_connections(struct maze *m, size_t n) {
+	/*
+		1. Find all cells connecting different regions.
+		2. Carve out n of them.
+	*/
+	
+	struct array *cs = array_create(50);
+	
+	/* 1. */
+	
+	for (size_t y = 2; y < m->height - 1; y += 2) {
+		for (size_t x = 2; x < m->width - 1; x += 2) {
+			struct pt here = (struct pt){x, y};
+						
+			if (maze_cell_at(m, here) != WALL)
+				continue;
+		
+			struct pt up = (struct pt){x, y - 1};
+			struct pt right = (struct pt){x + 1, y};
+			struct pt down = (struct pt){x, y + 1};
+			struct pt left = (struct pt){x - 1, y};
+			
+			if (maze_region_at(m, up) != maze_region_at(m, down) ||
+				maze_region_at(m, left) != maze_region_at(m, right)) {
+				array_insert(cs, pt_create(x, y));
+			}	
+		}
+	}
+	
+	/* 2. */
+	
+	int cs_to_carve = min(n, array_size(cs));
+		
+	for (size_t i = 0; i < cs_to_carve; i++) {
+		struct pt *p = array_pick(cs);
+		
+		if (maze_cell_at(m, *p) != CLEAR) {
+			maze_set_cell(m, *p, CLEAR);
+		}
+	}
+	
+	array_free(cs, (elem_free)free);
 }
 
 static bool
