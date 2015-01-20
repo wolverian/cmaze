@@ -43,6 +43,7 @@ Based on <http://journal.stuffwithstuff.com/2014/12/21/rooms-and-mazes/>.
 - [ ] Use native functions on OpenBSD.
 - [ ] Run tests on Darwin too.
 - [ ] abort() if malloc fails.
+- [ ] Use arrays of inline objects instead of arrays of pointers.
 
 ## License
 
