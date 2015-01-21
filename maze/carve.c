@@ -189,8 +189,12 @@ carve_connections(struct maze *m, size_t n) {
 			struct pt down = (struct pt){x, y + 1};
 			struct pt left = (struct pt){x - 1, y};
 			
-			if (maze_region_at(m, up) != maze_region_at(m, down) ||
-				maze_region_at(m, left) != maze_region_at(m, right)) {
+			bool lr = maze_cell_at(m, left) == CLEAR && maze_cell_at(m, right) == CLEAR &&
+				maze_region_at(m, left) != maze_region_at(m, right);
+			bool ud = maze_cell_at(m, up) == CLEAR && maze_cell_at(m, down) == CLEAR &&
+				maze_region_at(m, up) != maze_region_at(m, down);
+			
+			if (lr || ud) {
 				array_insert(cs, pt_create(x, y));
 			}	
 		}
@@ -202,10 +206,8 @@ carve_connections(struct maze *m, size_t n) {
 		
 	for (size_t i = 0; i < cs_to_carve; i++) {
 		struct pt *p = array_pick(cs);
-		
-		if (maze_cell_at(m, *p) != CLEAR) {
-			maze_set_cell(m, *p, CLEAR);
-		}
+		array_remove_elems(cs, p, (elem_eq)pt_eq);
+		maze_set_cell(m, *p, ATTENTION);
 	}
 	
 	array_free(cs, (elem_free)free);
