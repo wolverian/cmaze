@@ -209,7 +209,7 @@ carve_connections(struct maze *m, size_t n) {
 	for (size_t i = 0; i < cs_to_carve; i++) {
 		struct pt *p = array_pick(cs);
 		array_remove_elems(cs, p, (elem_eq)pt_eq);
-		maze_set_cell(m, *p, ATTENTION);
+		maze_set_cell(m, *p, CLEAR);
 		free(p);
 	}
 		
