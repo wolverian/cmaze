@@ -168,7 +168,9 @@ static void
 carve_connections(struct maze *m, size_t n) {
 	/*
 		1. Find all cells connecting different regions.
-		2. Carve out n of them.
+		2. Carve out n of them:
+			1. Clear the cell.
+			2. Join the neighbouring regions into one region.
 	*/
 	
 	struct array *cs = array_create(50);
