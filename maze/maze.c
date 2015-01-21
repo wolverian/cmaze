@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <sysexits.h>
+#include <wchar.h>
 
 #include "../libcross/reallocarray.h"
 
@@ -95,12 +96,12 @@ maze_join_regions(struct maze *m, struct pt a, struct pt b) {
 	}
 }
 
-char
+wchar_t
 cell_str(enum cell c) {
 	switch (c) {
-		case WALL: return '#';
-		case CLEAR: return ' ';
-		case ATTENTION: return 'x';
+		case WALL: return L'#';
+		case CLEAR: return L' ';
+		case ATTENTION: return L' ';
 	}
 	errx(EX_SOFTWARE, "invalid cell: %d", c);
 }

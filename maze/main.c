@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sysexits.h>
+#include <wchar.h>
+#include <locale.h>
 
 #include "../libcross/strtonum.h"
 
@@ -14,6 +16,8 @@
 
 int
 main(int argc, char **argv) {
+	setlocale(LC_ALL, "");
+
 	size_t w, h;
 
 	if (argc == 2) {
@@ -50,7 +54,7 @@ main(int argc, char **argv) {
 
 	for (int y = 0; y < m->height; y++) {
 		for (int x = 0; x < m->width; x++) {
-			putchar(cell_str(maze_cell_at(m, (struct pt){x, y})));
+			putwchar(cell_str(maze_cell_at(m, (struct pt){x, y})));
 		}
 		puts("");
 	}
