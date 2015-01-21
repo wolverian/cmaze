@@ -33,6 +33,9 @@ maze_region_at(const struct maze *, struct pt);
 region
 maze_new_region(struct maze *);
 
+void
+maze_join_regions(struct maze *m, struct pt a, struct pt b);
+
 char
 cell_str(enum cell c);
 

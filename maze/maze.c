@@ -78,6 +78,23 @@ maze_new_region(struct maze *m) {
 	return m->region_counter++;
 }
 
+void
+maze_join_regions(struct maze *m, struct pt a, struct pt b) {
+	region ra = maze_region_at(m, a);
+	region rb = maze_region_at(m, b);
+	
+	if (ra == rb) return;
+	
+	for (size_t y = 0; y < m->height; y++) {
+		for (size_t x = 0; x < m->width; x++) {
+			struct pt here = (struct pt){x, y};
+			
+			if (maze_region_at(m, here) == ra)
+				maze_set_region(m, here, rb);
+		}
+	}
+}
+
 char
 cell_str(enum cell c) {
 	switch (c) {
