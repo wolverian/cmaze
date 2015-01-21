@@ -210,9 +210,10 @@ carve_connections(struct maze *m, size_t n) {
 		struct pt *p = array_pick(cs);
 		array_remove_elems(cs, p, (elem_eq)pt_eq);
 		maze_set_cell(m, *p, ATTENTION);
+		free(p);
 	}
-	
-	array_free(cs, (elem_free)free);
+		
+	array_free(cs, (elem_free)free); /* cs has elements left over if n < size(cs). */
 }
 
 static bool
