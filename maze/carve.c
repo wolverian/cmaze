@@ -58,16 +58,11 @@ carve_maze(struct maze *m) {
 				 	
 				 	Just to make sure, we assert this property below.
 				 */
-				
-				struct pt up = (struct pt){x, y - 1};
-				struct pt right = (struct pt){x + 1, y};
-				struct pt down = (struct pt){x, y + 1};
-				struct pt left = (struct pt){x - 1, y}; 
-				
-				assert(maze_cell_at(m, up) != CLEAR);
-				assert(maze_cell_at(m, right) != CLEAR);
-				assert(maze_cell_at(m, down) != CLEAR);
-				assert(maze_cell_at(m, left) != CLEAR);
+
+				assert(maze_cell_at(m, pt_add_dir(here, UP)) != CLEAR);
+				assert(maze_cell_at(m, pt_add_dir(here, RIGHT)) != CLEAR);
+				assert(maze_cell_at(m, pt_add_dir(here, DOWN)) != CLEAR);
+				assert(maze_cell_at(m, pt_add_dir(here, LEFT)) != CLEAR);
 							
 				carve_maze_part(m, here, maze_new_region(m));
 			}
