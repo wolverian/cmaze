@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,11 +45,32 @@ carve_maze(struct maze *m) {
 	   This ensures that the maze is filled as much as possible and that
 	   only odd points are carved. */
 	   
-	region tunnel_reg = maze_new_region(m);
-	 
 	for (int y = 1; y < m->height - 1; y += 2) {
 		for (int x = 1; x < m->width - 1; x += 2) {
-			carve_maze_part(m, (struct pt){x, y}, tunnel_reg);
+			struct pt here = (struct pt){x, y};
+			
+			if (maze_cell_at(m, here) != CLEAR) {
+				/*	We can safely say this is a new region because:
+				 	1. This cell is not CLEAR.
+				 	2. We jump two coordinates at a time (i.e. (1,1)->(3,3)), so we have not started a carve from any of this cell's neighbours.
+				 	3. We carve two cells at a time in any direction in carve_maze_part.
+				 	From these we see we know that this cell's neighbours are not carved.
+				 	
+				 	Just to make sure, we assert this property below.
+				 */
+				
+				struct pt up = (struct pt){x, y - 1};
+				struct pt right = (struct pt){x + 1, y};
+				struct pt down = (struct pt){x, y + 1};
+				struct pt left = (struct pt){x - 1, y}; 
+				
+				assert(maze_cell_at(m, up) != CLEAR);
+				assert(maze_cell_at(m, right) != CLEAR);
+				assert(maze_cell_at(m, down) != CLEAR);
+				assert(maze_cell_at(m, left) != CLEAR);
+							
+				carve_maze_part(m, here, maze_new_region(m));
+			}
 		}
 	}
 	
@@ -131,6 +153,11 @@ carve_maze_part(struct maze *m, struct pt from, region reg) {
 	f->x = from.x;
 	f->y = from.y;
 	array_insert(frontier, f);
+	
+	if (maze_cell_at(m, from) != CLEAR) {
+		maze_set_cell(m, from, CLEAR);
+		maze_set_region(m, from, reg);
+	}
 
 	while (!array_empty(frontier)) {
 		struct pt *curr = (struct pt *)array_pick(frontier);
@@ -138,9 +165,8 @@ carve_maze_part(struct maze *m, struct pt from, region reg) {
 
 		for (int i = 0; i < nitems(DIRS); i++) {
 			enum dir *d = (enum dir *)&DIRS[i];
-			if (can_carve(m, *curr, *d)) {
+			if (can_carve(m, *curr, *d))
 				array_insert(unmade, d);
-			}
 		}
 
 		if (!array_empty(unmade)) {
@@ -210,7 +236,7 @@ carve_connections(struct maze *m, size_t n) {
 	for (size_t i = 0; i < cs_to_carve; i++) {
 		struct pt *p = array_pick(cs);
 		array_remove_elems(cs, p, (elem_eq)pt_eq);
-		maze_set_cell(m, *p, CLEAR);
+		maze_set_cell(m, *p, ATTENTION);
 		free(p);
 	}
 		
