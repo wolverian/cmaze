@@ -194,9 +194,11 @@ carve_connections(struct maze *m, size_t n) {
 			bool ud = maze_cell_at(m, up) == CLEAR && maze_cell_at(m, down) == CLEAR &&
 				maze_region_at(m, up) != maze_region_at(m, down);
 			
-			if (lr || ud) {
+			if (lr || ud)
 				array_insert(cs, pt_create(x, y));
-			}	
+				
+			/* TODO: Join the regions here. We can either flood fill and set the regions or track joined regions in a separate data structure.
+			*/
 		}
 	}
 	
