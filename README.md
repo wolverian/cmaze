@@ -38,7 +38,7 @@ Based on <http://journal.stuffwithstuff.com/2014/12/21/rooms-and-mazes/>.
 - [x] Join corridors/rooms.
 - [x] Join regions.
 - [x] Prune corridors.
-- [ ]  regions until there is only one region left.
+- [x] Keep joining regions until there is only one region left.
 - [ ] Rationalize parameters. Take dungeon size into account?
 
 ### Infrastructure

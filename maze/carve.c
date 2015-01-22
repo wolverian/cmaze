@@ -32,7 +32,7 @@ static bool
 can_carve(const struct maze *, struct pt, enum dir);
 
 static void
-carve_connections(struct maze *m, size_t n);
+carve_connections(struct maze *m);
 
 static void
 uncarve_dead_ends(struct maze *m);
@@ -47,7 +47,7 @@ carve_maze(struct maze *m) {
 		.max = (struct pt){.x = 9, .y = 9}
 	});
 	carve_corridors(m);
-	carve_connections(m, 15);
+	carve_connections(m);
 	uncarve_dead_ends(m);
 }
 
@@ -199,14 +199,14 @@ carve_maze_part(struct maze *m, struct pt from, region reg) {
 }
 
 static void
-carve_connections(struct maze *m, size_t n) {
+carve_connections(struct maze *m) {
 	/*
 		1. Find a cell connecting two different regions.
 		2. Clear the cell.
 		3. Join the neighbouring regions into one region.
 	*/
 		
-	for (size_t i = 0; i < n; i++) {
+	while (true) {
 		/* 1. */	
 		struct array *cs = find_connectors(m, 50);
 		
