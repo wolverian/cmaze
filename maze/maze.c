@@ -100,7 +100,7 @@ wchar_t
 cell_str(enum cell c) {
 	switch (c) {
 		case WALL: return L'#';
-		case CLEAR: return L' ';
+		case CLEAR: return L'.';
 		case ATTENTION: return L' ';
 	}
 	errx(EX_SOFTWARE, "invalid cell: %d", c);
