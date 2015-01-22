@@ -23,6 +23,9 @@ static void
 carve_maze_rooms(struct maze *, size_t, struct room_params);
 
 static void
+carve_corridors(struct maze *m);
+
+static void
 carve_maze_part(struct maze *, struct pt, region reg);
 
 static bool
@@ -30,6 +33,9 @@ can_carve(const struct maze *, struct pt, enum dir);
 
 static void
 carve_connections(struct maze *m, size_t n);
+
+static void
+uncarve_dead_ends(struct maze *m);
 
 static struct array *
 find_connectors(const struct maze *m, size_t extra_conns);
@@ -40,7 +46,13 @@ carve_maze(struct maze *m) {
 		.min = (struct pt){.x = 3, .y = 3},
 		.max = (struct pt){.x = 9, .y = 9}
 	});
+	carve_corridors(m);
+	carve_connections(m, 15);
+	uncarve_dead_ends(m);
+}
 
+void
+carve_corridors(struct maze *m) {
 	/* Q: Why do we carve in a loop?
 	   A: The carving algorithm can trap itself, i.e. it is not guaranteed
 	   to fill the available space. We can brute force around this by
@@ -71,8 +83,6 @@ carve_maze(struct maze *m) {
 			}
 		}
 	}
-	
-	carve_connections(m, 15);
 }
 
 struct room {
@@ -206,7 +216,7 @@ carve_connections(struct maze *m, size_t n) {
 		struct pt *p = array_pick(cs);
 		array_remove_elems(cs, p, (elem_eq)pt_eq);
 		
-		maze_set_cell(m, *p, ATTENTION);
+		maze_set_cell(m, *p, CLEAR);
 				
 		struct pt up = pt_add_dir(*p, UP);
 		struct pt right = pt_add_dir(*p, RIGHT);
@@ -263,6 +273,49 @@ find_connectors(const struct maze *m, size_t extra_conns) {
 	}
 	
 	return cs;
+}
+
+static bool
+is_dead_end(struct maze *m, struct pt p) {
+	if (maze_cell_at(m, p) != CLEAR) return false;
+	size_t n = maze_cell_at(m, pt_add_dir(p, UP))    != CLEAR ? 1 : 0;
+	n       += maze_cell_at(m, pt_add_dir(p, RIGHT)) != CLEAR ? 1 : 0;
+	n       += maze_cell_at(m, pt_add_dir(p, DOWN))  != CLEAR ? 1 : 0;
+	n       += maze_cell_at(m, pt_add_dir(p, LEFT))  != CLEAR ? 1 : 0;
+	return n == 3;
+}
+
+static void
+uncarve_dead_ends(struct maze *m) {
+	size_t n = 20;
+	
+	while (true) {
+		struct array *ds = array_create(50);
+		size_t corrs = 0;
+
+		for (size_t y = 1; y < m->height - 1; y++) {
+			for (size_t x = 1; x < m->width - 1; x++) {
+				struct pt *here = pt_create(x, y);
+				
+				if (maze_cell_at(m, *here) == CLEAR)
+					corrs++;
+					
+				if (is_dead_end(m, *here)) {
+					array_insert(ds, here);
+				}
+			}
+		}
+	
+		if (corrs <= n || array_empty(ds)) {
+			array_free(ds, (elem_free)free);
+			break;
+		}
+			
+		for (int i = 0; i < array_size(ds); i++)
+			maze_set_cell(m, *(struct pt *)array_get(ds, i), WALL);
+		
+		array_free(ds, (elem_free)free);
+	}
 }
 
 static bool

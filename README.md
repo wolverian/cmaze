@@ -37,7 +37,8 @@ Based on <http://journal.stuffwithstuff.com/2014/12/21/rooms-and-mazes/>.
 - [x] Carve rooms.
 - [x] Join corridors/rooms.
 - [x] Join regions.
-- [ ] Prune corridors.
+- [x] Prune corridors.
+- [ ] Rationalize parameters. Take dungeon size into account?
 
 ### Infrastructure
 
