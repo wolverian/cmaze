@@ -31,6 +31,9 @@ can_carve(const struct maze *, struct pt, enum dir);
 static void
 carve_connections(struct maze *m, size_t n);
 
+static struct array *
+find_connectors(const struct maze *m, size_t extra_conns);
+
 void
 carve_maze(struct maze *m) {
 	carve_maze_rooms(m, 20, (struct room_params){
@@ -188,12 +191,48 @@ carve_maze_part(struct maze *m, struct pt from, region reg) {
 static void
 carve_connections(struct maze *m, size_t n) {
 	/*
-		1. Find all cells connecting different regions.
-		2. Carve out n of them:
-			1. Clear the cell.
-			2. Join the neighbouring regions into one region.
+		1. Find a cell connecting two different regions.
+		2. Clear the cell.
+		3. Join the neighbouring regions into one region.
 	*/
+		
+	for (size_t i = 0; i < n; i++) {
+		/* 1. */	
+		struct array *cs = find_connectors(m, 50);
+		
+		if (array_size(cs) == 0)
+			break;
+		
+		struct pt *p = array_pick(cs);
+		array_remove_elems(cs, p, (elem_eq)pt_eq);
+		
+		maze_set_cell(m, *p, ATTENTION);
+				
+		struct pt up = pt_add_dir(*p, UP);
+		struct pt right = pt_add_dir(*p, RIGHT);
+		struct pt down = pt_add_dir(*p, DOWN);
+		struct pt left = pt_add_dir(*p, LEFT);
 	
+		bool lr = maze_cell_at(m, left) == CLEAR && maze_cell_at(m, right) == CLEAR;
+		bool ud = maze_cell_at(m, up) == CLEAR && maze_cell_at(m, down) == CLEAR;
+		
+		if (lr && ud) {
+			maze_join_regions(m, up, right);
+			maze_join_regions(m, right, down);
+			maze_join_regions(m, down, left);
+		} else if (lr) {
+			maze_join_regions(m, left, right);
+		} else if (ud) {
+			maze_join_regions(m, up, down);
+		}
+		
+		free(p);
+		array_free(cs, (elem_free)free);
+	}
+}
+
+static struct array *
+find_connectors(const struct maze *m, size_t extra_conns) {
 	struct array *cs = array_create(50);
 	
 	/* 1. */
@@ -210,32 +249,20 @@ carve_connections(struct maze *m, size_t n) {
 			struct pt down = (struct pt){x, y + 1};
 			struct pt left = (struct pt){x - 1, y};
 			
-			bool lr = maze_cell_at(m, left) == CLEAR && maze_cell_at(m, right) == CLEAR &&
-				maze_region_at(m, left) != maze_region_at(m, right);
-			bool ud = maze_cell_at(m, up) == CLEAR && maze_cell_at(m, down) == CLEAR &&
-				maze_region_at(m, up) != maze_region_at(m, down);
+			bool clear_lr = maze_cell_at(m, left) == CLEAR && maze_cell_at(m, right) == CLEAR;
+			bool lr = clear_lr && maze_region_at(m, left) != maze_region_at(m, right);
 			
-			if (lr || ud) {
+			bool clear_ud = maze_cell_at(m, up) == CLEAR && maze_cell_at(m, down) == CLEAR;
+			bool ud = maze_region_at(m, up) != maze_region_at(m, down);
+				
+			bool extra = (clear_lr || clear_ud) && arc4random_uniform(extra_conns) == 0;
+			
+			if (lr || ud)
 				array_insert(cs, pt_create(x, y));
-
-				if (lr) maze_join_regions(m, left, right);
-				if (ud) maze_join_regions(m, up, down);
-			}
 		}
 	}
 	
-	/* 2. */
-	
-	int cs_to_carve = min(n, array_size(cs));
-		
-	for (size_t i = 0; i < cs_to_carve; i++) {
-		struct pt *p = array_pick(cs);
-		array_remove_elems(cs, p, (elem_eq)pt_eq);
-		maze_set_cell(m, *p, ATTENTION);
-		free(p);
-	}
-		
-	array_free(cs, (elem_free)free); /* cs has elements left over if n < size(cs). */
+	return cs;
 }
 
 static bool

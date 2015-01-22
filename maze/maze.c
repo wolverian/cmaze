@@ -90,8 +90,8 @@ maze_join_regions(struct maze *m, struct pt a, struct pt b) {
 		for (size_t x = 0; x < m->width; x++) {
 			struct pt here = (struct pt){x, y};
 			
-			if (maze_region_at(m, here) == ra)
-				maze_set_region(m, here, rb);
+			if (maze_region_at(m, here) == rb)
+				maze_set_region(m, here, ra);
 		}
 	}
 }
@@ -101,7 +101,7 @@ cell_str(enum cell c) {
 	switch (c) {
 		case WALL: return L'#';
 		case CLEAR: return L'.';
-		case ATTENTION: return L' ';
+		case ATTENTION: return L'/';
 	}
 	errx(EX_SOFTWARE, "invalid cell: %d", c);
 }
