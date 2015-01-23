@@ -103,11 +103,6 @@ room_create(struct pt min, struct pt size) {
 	return r;
 }
 
-static void
-room_free(struct room *r) {
-	free(r);
-}
-
 static bool
 rooms_overlap(struct room a, struct room b) {
 	return (a.min.x < b.max.x && a.max.x > b.min.x &&
@@ -156,7 +151,7 @@ carve_maze_rooms(struct maze *m, size_t max_tries, struct room_params rp) {
 		}
 	}
 
-	roomarray_free(rooms, (roomarray_elem_free)room_free);
+	roomarray_free(rooms);
 }
 
 static void
@@ -191,11 +186,11 @@ carve_maze_part(struct maze *m, struct pt from, region reg) {
 
 			ptarray_add(frontier, beyond);
 		} else {
-			ptarray_remove_elems(frontier, curr, (ptarray_elem_eq)pt_eq_p);
+			ptarray_remove_elems(frontier, curr, (ptarray_elem_eq)pt_eq);
 		}
 	}
 
-	ptarray_free(frontier, NULL);
+	ptarray_free(frontier);
 }
 
 static void
@@ -236,7 +231,7 @@ carve_connections(struct maze *m) {
 			maze_join_regions(m, up, down);
 		}
 		
-		ptarray_free(cs, (ptarray_elem_free)free);
+		ptarray_free(cs);
 	}
 }
 
@@ -306,14 +301,14 @@ uncarve_dead_ends(struct maze *m) {
 		}
 	
 		if (corrs <= n || ptarray_empty(ds)) {
-			ptarray_free(ds, (ptarray_elem_free)free);
+			ptarray_free(ds);
 			break;
 		}
 			
 		for (int i = 0; i < ptarray_size(ds); i++)
 			maze_set_cell(m, ptarray_get(ds, i), WALL);
 		
-		ptarray_free(ds, (ptarray_elem_free)free);
+		ptarray_free(ds);
 	}
 }
 

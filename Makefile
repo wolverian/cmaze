@@ -1,7 +1,7 @@
 .if ${SYSTEM} == OpenBSD
-SUBDIR=libarray maze
+SUBDIR=libarray2 maze
 .else
-SUBDIR=libcross libarray maze
+SUBDIR=libcross libarray2 maze
 .endif
 
 .include <bsd.subdir.mk>

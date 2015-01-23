@@ -1,7 +1,6 @@
-COPTS=-std=c99
+COPTS=-std=c99 -g
 PROG=maze
 SRCS=main.c geom.c maze.c carve.c
-OBJS+=../libarray2/array2.o
 DPADD+=../libarray2/libarray2.a
 
 .if ${SYSTEM} != OpenBSD

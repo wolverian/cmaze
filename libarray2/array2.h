@@ -15,8 +15,6 @@ struct _n { \
 }; \
 \
 typedef bool (* _n##_elem_eq)(_t, _t); \
-typedef void (*_n##_elem_free)(_t *); \
-\
 struct _n * \
 _n##_create(size_t n) { \
 	struct _n *o = malloc(sizeof(struct _n)); \
@@ -27,10 +25,9 @@ _n##_create(size_t n) { \
 } \
 \
 void \
-_n##_free(struct _n *o, _n##_elem_free f) { \
-	for (size_t i = 0; i < o->size; i++) \
-		f(&o->elems[i]); \
-	free(o); \
+_n##_free(struct _n *a) { \
+	free(a->elems); \
+	free(a); \
 } \
 \
 size_t \
