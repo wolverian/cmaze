@@ -16,9 +16,9 @@
 
 int
 main(int argc, char **argv) {
-	setlocale(LC_ALL, "");
-
 	size_t w, h;
+
+	(void)setlocale(LC_ALL, "");
 
 	if (argc == 2) {
 		const char *e;

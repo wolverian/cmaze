@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 #include "../libcross/nitems.h"
-#include "../libarray/array.h"
+#include "../libarray2/array2.h"
 
 #include "geom.h"
 #include "maze.h"
@@ -18,6 +18,14 @@
 struct room_params {
 	struct pt min, max;
 };
+
+struct room {
+	struct pt min, max;
+};
+
+DECLARE_ARRAY(struct pt, ptarray);
+DECLARE_ARRAY(struct room, roomarray);
+DECLARE_ARRAY(enum dir, dirarray);
 
 static void
 carve_maze_rooms(struct maze *, size_t, struct room_params);
@@ -37,7 +45,7 @@ carve_connections(struct maze *m);
 static void
 uncarve_dead_ends(struct maze *m);
 
-static struct array *
+static struct ptarray *
 find_connectors(const struct maze *m, size_t extra_conns);
 
 void
@@ -85,10 +93,6 @@ carve_corridors(struct maze *m) {
 	}
 }
 
-struct room {
-	struct pt min, max;
-};
-
 struct room *
 room_create(struct pt min, struct pt size) {
 	struct room *r = malloc(sizeof(struct room));
@@ -105,14 +109,14 @@ room_free(struct room *r) {
 }
 
 static bool
-rooms_overlap(struct room *a, struct room *b) {
-	return (a->min.x < b->max.x && a->max.x > b->min.x &&
-		a->min.y < b->max.y && a->max.y > b->min.y);
+rooms_overlap(struct room a, struct room b) {
+	return (a.min.x < b.max.x && a.max.x > b.min.x &&
+		a.min.y < b.max.y && a.max.y > b.min.y);
 }
 
 static void
 carve_maze_rooms(struct maze *m, size_t max_tries, struct room_params rp) {
-	struct array *rooms = array_create(10);
+	struct roomarray *rooms = roomarray_create(10);
 
 	for (size_t i = 0; i < max_tries; i++) {
 		/* Is this mess even correct? */
@@ -121,81 +125,77 @@ carve_maze_rooms(struct maze *m, size_t max_tries, struct room_params rp) {
 		size_t height = arc4random_uniform(rp.max.y/2)*2 + rp.min.y;
 		size_t width = arc4random_uniform(rp.max.x/2)*2 + rp.min.x;
 
-		struct room *r = room_create((struct pt){x, y}, (struct pt){width, height});
+		struct room r = (struct room){
+			.min = (struct pt){x, y},
+			.max = (struct pt){width, height}
+		};
 
 		bool overlap = false;
 
-		for (size_t j = 0; j < array_size(rooms); j++) {
-			if (rooms_overlap(r, array_get(rooms, j))) {
+		for (size_t j = 0; j < roomarray_size(rooms); j++) {
+			if (rooms_overlap(r, roomarray_get(rooms, j))) {
 				overlap = true;
 			}
 		}
 
-		bool in_bounds = r->max.x < m->width && r->max.y < m->height;
+		bool in_bounds = r.max.x < m->width && r.max.y < m->height;
 
-		if (overlap || !in_bounds)
-			room_free(r);
-		else
-			array_insert(rooms, r);
+		if (!overlap && in_bounds)
+			roomarray_add(rooms, r);
 	}
 
-	for (size_t i = 0; i < array_size(rooms); i++) {
-		struct room *r = array_get(rooms, i);
+	for (size_t i = 0; i < roomarray_size(rooms); i++) {
+		struct room r = roomarray_get(rooms, i);
 		region reg = maze_new_region(m);
 
-		for (size_t y = r->min.y; y < r->max.y; y++) {
-			for (size_t x = r->min.x; x < r->max.x; x++) {
+		for (size_t y = r.min.y; y < r.max.y; y++) {
+			for (size_t x = r.min.x; x < r.max.x; x++) {
 				maze_set_cell(m, (struct pt){x, y}, CLEAR);
 				maze_set_region(m, (struct pt){x, y}, reg);
 			}
 		}
 	}
 
-	array_free(rooms, (elem_free)room_free);
+	roomarray_free(rooms, (roomarray_elem_free)room_free);
 }
 
 static void
 carve_maze_part(struct maze *m, struct pt from, region reg) {
-	struct array *frontier = array_create(10);
-	struct pt *f = malloc(sizeof(struct pt));
-	f->x = from.x;
-	f->y = from.y;
-	array_insert(frontier, f);
+	struct ptarray *frontier = ptarray_create(10);
+	ptarray_add(frontier, from);
 	
 	if (maze_cell_at(m, from) != CLEAR) {
 		maze_set_cell(m, from, CLEAR);
 		maze_set_region(m, from, reg);
 	}
 
-	while (!array_empty(frontier)) {
-		struct pt *curr = (struct pt *)array_pick(frontier);
-		struct array *unmade = array_create(4);
+	while (!ptarray_empty(frontier)) {
+		struct pt curr = ptarray_pick(frontier);
+		struct dirarray *unmade = dirarray_create(4);
 
 		for (int i = 0; i < nitems(DIRS); i++) {
-			enum dir *d = (enum dir *)&DIRS[i];
-			if (can_carve(m, *curr, *d))
-				array_insert(unmade, d);
+			if (can_carve(m, curr, DIRS[i]))
+				dirarray_add(unmade, DIRS[i]);
 		}
 
-		if (!array_empty(unmade)) {
-			enum dir d = *(enum dir *)array_pick(unmade);
+		if (!dirarray_empty(unmade)) {
+			enum dir d = dirarray_pick(unmade);
 
-			struct pt wall = pt_add_dir(*curr, d);
-			struct pt *beyond = pt_add_dir_p(wall, d);
+			struct pt wall = pt_add_dir(curr, d);
+			struct pt beyond = pt_add_dir(wall, d);
 
 			maze_set_cell(m, wall, CLEAR);
 			maze_set_region(m, wall, reg);
-			maze_set_cell(m, *beyond, CLEAR);
-			maze_set_region(m, *beyond, reg);
+			maze_set_cell(m, beyond, CLEAR);
+			maze_set_region(m, beyond, reg);
 
-			array_insert(frontier, beyond);
+			ptarray_add(frontier, beyond);
 		} else {
-			array_remove_elems(frontier, curr, (elem_eq)pt_eq_p);
-			free(curr);
+			ptarray_remove_elems(frontier, curr, (ptarray_elem_eq)pt_eq_p);
 		}
 	}
 
-	array_free(frontier, NULL);
+	ptarray_free(frontier, NULL);
 }
 
 static void
@@ -208,20 +208,20 @@ carve_connections(struct maze *m) {
 		
 	while (true) {
 		/* 1. */	
-		struct array *cs = find_connectors(m, 50);
+		struct ptarray *cs = find_connectors(m, 50);
 		
-		if (array_size(cs) == 0)
+		if (ptarray_empty(cs))
 			break;
 		
-		struct pt *p = array_pick(cs);
-		array_remove_elems(cs, p, (elem_eq)pt_eq);
+		struct pt p = ptarray_pick(cs);
+		ptarray_remove_elems(cs, p, pt_eq);
 		
-		maze_set_cell(m, *p, CLEAR);
+		maze_set_cell(m, p, CLEAR);
 				
-		struct pt up = pt_add_dir(*p, UP);
-		struct pt right = pt_add_dir(*p, RIGHT);
-		struct pt down = pt_add_dir(*p, DOWN);
-		struct pt left = pt_add_dir(*p, LEFT);
+		struct pt up = pt_add_dir(p, UP);
+		struct pt right = pt_add_dir(p, RIGHT);
+		struct pt down = pt_add_dir(p, DOWN);
+		struct pt left = pt_add_dir(p, LEFT);
 	
 		bool lr = maze_cell_at(m, left) == CLEAR && maze_cell_at(m, right) == CLEAR;
 		bool ud = maze_cell_at(m, up) == CLEAR && maze_cell_at(m, down) == CLEAR;
@@ -236,14 +236,13 @@ carve_connections(struct maze *m) {
 			maze_join_regions(m, up, down);
 		}
 		
-		free(p);
-		array_free(cs, (elem_free)free);
+		ptarray_free(cs, (ptarray_elem_free)free);
 	}
 }
 
-static struct array *
+static struct ptarray *
 find_connectors(const struct maze *m, size_t extra_conns) {
-	struct array *cs = array_create(50);
+	struct ptarray *cs = ptarray_create(50);
 	
 	/* 1. */
 	
@@ -268,7 +267,7 @@ find_connectors(const struct maze *m, size_t extra_conns) {
 			bool extra = (clear_lr || clear_ud) && arc4random_uniform(extra_conns) == 0;
 			
 			if (lr || ud)
-				array_insert(cs, pt_create(x, y));
+				ptarray_add(cs, here);
 		}
 	}
 	
@@ -290,31 +289,31 @@ uncarve_dead_ends(struct maze *m) {
 	size_t n = 20;
 	
 	while (true) {
-		struct array *ds = array_create(50);
+		struct ptarray *ds = ptarray_create(50);
 		size_t corrs = 0;
 
 		for (size_t y = 1; y < m->height - 1; y++) {
 			for (size_t x = 1; x < m->width - 1; x++) {
-				struct pt *here = pt_create(x, y);
+				struct pt here = (struct pt){x, y};
 				
-				if (maze_cell_at(m, *here) == CLEAR)
+				if (maze_cell_at(m, here) == CLEAR)
 					corrs++;
 					
-				if (is_dead_end(m, *here)) {
-					array_insert(ds, here);
+				if (is_dead_end(m, here)) {
+					ptarray_add(ds, here);
 				}
 			}
 		}
 	
-		if (corrs <= n || array_empty(ds)) {
-			array_free(ds, (elem_free)free);
+		if (corrs <= n || ptarray_empty(ds)) {
+			ptarray_free(ds, (ptarray_elem_free)free);
 			break;
 		}
 			
-		for (int i = 0; i < array_size(ds); i++)
-			maze_set_cell(m, *(struct pt *)array_get(ds, i), WALL);
+		for (int i = 0; i < ptarray_size(ds); i++)
+			maze_set_cell(m, ptarray_get(ds, i), WALL);
 		
-		array_free(ds, (elem_free)free);
+		ptarray_free(ds, (ptarray_elem_free)free);
 	}
 }
 

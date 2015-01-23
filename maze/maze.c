@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <err.h>
 #include <errno.h>
 #include <stdbool.h>
@@ -13,6 +14,8 @@
 
 struct maze *
 maze_create(size_t width, size_t height) {
+	assert(width > 0 && height > 0);
+
 	if (height > 0 && height > INT64_MAX / width) {
 		errno = ENOMEM;
 		err(EX_SOFTWARE, "overflow");
