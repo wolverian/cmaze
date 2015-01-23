@@ -50,9 +50,9 @@ find_connectors(const struct maze *m, size_t extra_conns);
 
 void
 carve_maze(struct maze *m) {
-	carve_maze_rooms(m, 20, (struct room_params){
-		.min = (struct pt){.x = 3, .y = 3},
-		.max = (struct pt){.x = 9, .y = 9}
+	carve_maze_rooms(m, 50, (struct room_params){
+		.min = (struct pt){.x = 5, .y = 5},
+		.max = (struct pt){.x = 21, .y = 15}
 	});
 	carve_corridors(m);
 	carve_connections(m);
@@ -72,35 +72,10 @@ carve_corridors(struct maze *m) {
 		for (int x = 1; x < m->width - 1; x += 2) {
 			struct pt here = (struct pt){x, y};
 			
-			if (maze_cell_at(m, here) != CLEAR) {
-				/*	We can safely say this is a new region because:
-				 	1. This cell is not CLEAR.
-				 	2. We jump two coordinates at a time (i.e. (1,1)->(3,3)), so we have not started a carve from any of this cell's neighbours.
-				 	3. We carve two cells at a time in any direction in carve_maze_part.
-				 	From these we see we know that this cell's neighbours are not carved.
-				 	
-				 	Just to make sure, we assert this property below.
-				 */
-
-				assert(maze_cell_at(m, pt_add_dir(here, UP)) != CLEAR);
-				assert(maze_cell_at(m, pt_add_dir(here, RIGHT)) != CLEAR);
-				assert(maze_cell_at(m, pt_add_dir(here, DOWN)) != CLEAR);
-				assert(maze_cell_at(m, pt_add_dir(here, LEFT)) != CLEAR);
-							
+			if (maze_cell_at(m, here) != CLEAR)	
 				carve_maze_part(m, here, maze_new_region(m));
 			}
-		}
 	}
-}
-
-struct room *
-room_create(struct pt min, struct pt size) {
-	struct room *r = malloc(sizeof(struct room));
-	r->min.x = min.x;
-	r->min.y = min.y;
-	r->max.x = min.x + size.x;
-	r->max.y = min.y + size.y;
-	return r;
 }
 
 static bool
@@ -122,7 +97,7 @@ carve_maze_rooms(struct maze *m, size_t max_tries, struct room_params rp) {
 
 		struct room r = (struct room){
 			.min = (struct pt){x, y},
-			.max = (struct pt){width, height}
+			.max = (struct pt){x+width, y+height}
 		};
 
 		bool overlap = false;
@@ -281,7 +256,7 @@ is_dead_end(struct maze *m, struct pt p) {
 
 static void
 uncarve_dead_ends(struct maze *m) {
-	size_t n = 20;
+	size_t n = 200;
 	
 	while (true) {
 		struct ptarray *ds = ptarray_create(50);

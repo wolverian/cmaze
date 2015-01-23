@@ -60,5 +60,6 @@ main(int argc, char **argv) {
 	}
 
 	maze_free(m);
+	
 	return 0;
 }
