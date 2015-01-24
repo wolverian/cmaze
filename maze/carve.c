@@ -15,10 +15,6 @@
 		__typeof__ (b) _b = (b); \
 		_a < _b ? _a : _b; })
 
-struct room_params {
-	struct pt min, max;
-};
-
 struct room {
 	struct pt min, max;
 };
@@ -256,7 +252,7 @@ is_dead_end(struct maze *m, struct pt p) {
 
 static void
 uncarve_dead_ends(struct maze *m) {
-	size_t n = 200;
+	size_t n = 400;
 	
 	while (true) {
 		struct ptarray *ds = ptarray_create(50);

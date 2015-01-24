@@ -9,12 +9,8 @@ struct pt {
 	int x, y;
 };
 
-struct pt * pt_create(int x, int y);
-
 bool pt_eq(struct pt a, struct pt b);
-bool pt_eq_p(struct pt *a, struct pt *b);
 
 struct pt pt_add_dir(struct pt p, enum dir d);
-struct pt * pt_add_dir_p(struct pt p, enum dir d);
 
 #endif

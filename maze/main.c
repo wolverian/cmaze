@@ -1,12 +1,13 @@
 #include <err.h>
 #include <errno.h>
+#include <locale.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sysexits.h>
+#include <unistd.h>
 #include <wchar.h>
-#include <locale.h>
 
 #include "../libcross/strtonum.h"
 
@@ -14,11 +15,54 @@
 #include "maze.h"
 #include "carve.h"
 
+void usage();
+
+struct pt parse_geom(char *);
+
+struct room_params parse_rp(char *);
+
 int
 main(int argc, char **argv) {
 	size_t w, h;
 
 	(void)setlocale(LC_ALL, "");
+	
+	struct pt size = (struct pt){
+		.x = 31,
+		.y = 21
+	};
+	
+	struct room_params rp = (struct room_params){
+		.min = (struct pt){
+			.x = 5,
+			.y = 5
+		},
+		.max = (struct pt){
+			.x = 25,
+			.y = 15
+		}
+	};
+	
+	size_t corridors = 200;
+	
+	char ch;
+	const char *e;
+	while ((ch = getopt(argc, argv, "s:r:c:")) != -1) {
+		switch (ch){
+		case 's':
+			size = parse_geom(optarg); 
+			break;
+		case 'r':
+			rp = parse_rp(optarg);
+			break;
+		case 'c':
+			corridors = strtonum(optarg, 0, 1000, &e);
+			if (e) usage();
+			break;
+		default:
+			usage();
+		}
+	}
 
 	if (argc == 2) {
 		const char *e;
@@ -62,4 +106,23 @@ main(int argc, char **argv) {
 	maze_free(m);
 	
 	return 0;
+}
+
+void
+usage() {
+	puts("maze [-s size] [-r room geometry] [-c corridors]");
+	exit(EX_USAGE);
+}
+
+struct pt
+parse_geom(char *s) {
+	return (struct pt){0, 0};
+}
+
+struct room_params
+parse_rp(char *s) {
+	return (struct room_params){
+		.min = (struct pt){0, 0},
+		.max = (struct pt){0, 0}
+	};
 }
